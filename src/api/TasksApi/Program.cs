@@ -32,7 +32,7 @@ users.MapGet("/{id}", async (ApiContext context, int id) =>
 users.MapPost("/", async (Validated<InsertUserRequest> request, IMapper mapper, ApiContext context) =>
 {
     var (isValid, value) = request;
-    
+
     if (!isValid) return Results.ValidationProblem(request.Errors);
 
     var user = mapper.Map<User>(value);
@@ -40,6 +40,20 @@ users.MapPost("/", async (Validated<InsertUserRequest> request, IMapper mapper, 
     await context.SaveChangesAsync();
 
     return Results.Created($"/users/{user.Id}", user);
+});
+
+users.MapPut("/", async (Validated<UpdateUserRequest> request, IMapper mapper, ApiContext context) =>
+{
+    var (isValid, value) = request;
+    if (!isValid) return Results.ValidationProblem(request.Errors);
+
+    var user = await context.Users.FindAsync(value.Id);    
+    if (user is null) return Results.NotFound();
+    
+    user.Name = value.Name;
+    await context.SaveChangesAsync();
+
+    return Results.NoContent();
 });
 
 SeedDatabase(app);
