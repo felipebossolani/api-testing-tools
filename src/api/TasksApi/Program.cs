@@ -2,8 +2,11 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using TasksApi;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddDbContext<ApiContext>(options => options.UseInMemoryDatabase("InMemoryDatabase"));
 builder.Services.AddEndpointsApiExplorer();
@@ -11,32 +14,28 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "TasksApi", Version = "v1" });
 });
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TasksApi v1"));
 
-app.MapGet("/users", async (ApiContext context) =>
+var users = app.MapGroup("/users");
+
+users.MapGet("/", async (ApiContext context) =>
 {
     return await context.Users.ToListAsync();
 });
-
-app.MapGet("/users/{id}", async (ApiContext context, int id) =>
+users.MapGet("/{id}", async (ApiContext context, int id) =>
 {
     return await context.Users.FindAsync(id) is User user ? Results.Ok(user) : Results.NotFound();
 });
-
-app.MapPost("/users", async (ApiContext context, InsertUserCommand command, IMapper mapper) =>
+users.MapPost("/", async (Validated<InsertUserRequest> request, IMapper mapper, ApiContext context) =>
 {
-    /*
-    if (errors.Any())
-    {
-        return Results.BadRequest(errors);
-    }
-    */
-    var user = mapper.Map<User>(command);
+    var (isValid, value) = request;
+    
+    if (!isValid) return Results.ValidationProblem(request.Errors);
 
+    var user = mapper.Map<User>(value);
     context.Users.Add(user);
     await context.SaveChangesAsync();
 
