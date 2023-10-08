@@ -1,0 +1,17 @@
+meta {
+  name: Delete User
+  type: http
+  seq: 5
+}
+
+delete {
+  url: https://localhost:5001/users/8a44785c-4c85-4e34-9ea3-e904cf2ab4a8
+  body: json
+  auth: none
+}
+
+body:json {
+  {  
+    "Name" : "Felipe Boss"
+  }
+}

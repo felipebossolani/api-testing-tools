@@ -1,0 +1,17 @@
+meta {
+  name: Get All Users
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://localhost:5001/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Name" : "James Ford"
+  }
+}

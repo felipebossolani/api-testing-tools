@@ -1,0 +1,17 @@
+meta {
+  name: Create User
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://localhost:5001/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Name" : "James Ford"
+  }
+}
