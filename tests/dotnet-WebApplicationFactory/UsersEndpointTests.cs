@@ -51,7 +51,7 @@ public class UsersEndpointTests : IClassFixture<WebApplicationFactory<TasksApi.P
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         // Additional checks can be added here.
     }
-
+    
     [Fact]
     public async Task UpdateUser_ReturnsNoContent_ForValidDataAndId()
     {
@@ -65,7 +65,7 @@ public class UsersEndpointTests : IClassFixture<WebApplicationFactory<TasksApi.P
         var user = await getUserResponse.Content.ReadFromJsonAsync<User>();
         Assert.Equal("Updated Felipe", user.Name);
     }
-
+    
     [Fact]
     public async Task UpdateUser_ReturnsNotFound_ForInvalidId()
     {
@@ -89,5 +89,33 @@ public class UsersEndpointTests : IClassFixture<WebApplicationFactory<TasksApi.P
         var invalidUserId = Guid.NewGuid();
         var response = await _client.DeleteAsync($"/users/{invalidUserId}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task TestUserLifecycle_Create_Update_Delete()
+    {
+        // 1. Create User
+        var newUser = new InsertUserRequest("Jane Doe");
+        var createResponse = await _client.PostAsJsonAsync("/users", newUser);
+        createResponse.EnsureSuccessStatusCode();
+
+        var locationHeader = createResponse.Headers.Location;
+        Assert.NotNull(locationHeader);
+        var userId = locationHeader.ToString().Split('/').Last();
+
+        // 2. Update User
+        var updatedData = new UpdateUserRequest("Jane Doe Updated");
+        var updateResponse = await _client.PutAsJsonAsync($"/users/{userId}", updatedData);
+        updateResponse.EnsureSuccessStatusCode();
+
+        // Optionally, check if the update was successful
+        var getUserResponse = await _client.GetAsync($"/users/{userId}");
+        getUserResponse.EnsureSuccessStatusCode();
+        var user = await getUserResponse.Content.ReadFromJsonAsync<User>();
+        Assert.Equal("Jane Doe Updated", user.Name);
+
+        // 3. Delete User
+        var deleteResponse = await _client.DeleteAsync($"/users/{userId}");
+        deleteResponse.EnsureSuccessStatusCode();
     }
 }
