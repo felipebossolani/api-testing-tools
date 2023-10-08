@@ -1,33 +1,40 @@
-using AutoMapper;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using TasksApi;
-using FluentValidation;
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+namespace TasksApi;
 
-builder.Services.AddDbContext<ApiContext>(options => options.UseInMemoryDatabase("InMemoryDatabase"));
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+public class Program
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "TasksApi", Version = "v1" });
-});
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+        builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-var app = builder.Build();
-app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TasksApi v1"));
+        builder.Services.AddDbContext<ApiContext>(options => options.UseInMemoryDatabase("InMemoryDatabase"));
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "TasksApi", Version = "v1" });
+        });
 
-app.AddUsersEndpoints();
+        var app = builder.Build();
+        app.UseSwagger();
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TasksApi v1"));
 
-SeedDatabase(app);
-app.Run();
+        app.AddUsersEndpoints();
 
-static void SeedDatabase(WebApplication app)
-{
-    using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
-    var apiContext = services.GetRequiredService<ApiContext>();
-    DataSeeder.Seed(apiContext);
+        SeedDatabase(app);
+        app.Run();
+    }
+
+    static void SeedDatabase(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var services = scope.ServiceProvider;
+        var apiContext = services.GetRequiredService<ApiContext>();
+        DataSeeder.Seed(apiContext);
+    }
 }
