@@ -11,19 +11,19 @@ public class DataSeeder
         var user = new User { Id = userId, Name = "Felipe" };
         context.Users.Add(user);
 
-        var tasks = new List<Task>()
+        var tasks = new List<TTask>()
         {
-            new Task {
+            new TTask {
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Name = "Task1 for Felipe",
                 Status = TaskStatus.InProgress },
-            new Task {
+            new TTask {
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Name = "Task2 for Felipe",
                 Status = TaskStatus.NotStarted },
-            new Task {
+            new TTask {
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Name = "Task3 for Felipe",
