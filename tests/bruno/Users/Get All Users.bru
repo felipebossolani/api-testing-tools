@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: https://localhost:5001/users
+  url: {{baseUrl}}/users
   body: json
   auth: none
 }
@@ -14,4 +14,15 @@ body:json {
   {
     "Name" : "James Ford"
   }
+}
+
+assert {
+  res.status: 200
+}
+
+tests {
+  test("status code test", function(){
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(201);
+  });
 }
